@@ -1,11 +1,28 @@
-export default class Member {
-  Username: String;
-  AccessToken: string;
-  UserID: number;
+import db from "../db";
 
-  constructor(Username: String, AccessToken: string, UserID: number) {
-    this.Username = Username;
-    this.AccessToken = AccessToken;
-    this.UserID = UserID;
+export default class Member {
+  username: string;
+  password: string;
+  userid?: number;
+
+  constructor({
+    username,
+    password,
+    userid,
+  }: {
+    username: string;
+    password: string;
+    userid?: number;
+  }) {
+    this.username = username;
+    this.password = password;
+    this.userid = userid;
+  }
+
+  async save() {
+    await db.none(
+      "INSERT INTO Member VALUES ($<username>, $<password>);",
+      this
+    );
   }
 }

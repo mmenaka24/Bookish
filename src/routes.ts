@@ -1,16 +1,14 @@
 import "dotenv/config";
 import express, { Request, Response } from "express";
 
-import books from "./controllers/books";
-import bookcontroller from "./controllers/bookcontroller";
+import bookcontroller from "./controllers/bookController";
+import authController from "./controllers/authController";
+import loanController from "./controllers/loanController";
 
 const router = express.Router();
 
-router.get("/books", async (req: Request, res: Response) => {
-  let bks = await books();
-  res.send(JSON.stringify(bks));
-});
-
 router.use("/book", bookcontroller);
+router.use("/loans", loanController);
+router.use("/", authController);
 
 export default router;

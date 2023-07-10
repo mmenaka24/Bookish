@@ -1,9 +1,10 @@
+import barcode from "../barcode";
 import db from "../db";
 
 export default class Book {
-  ISBN: String;
-  Title: string;
-  private AuthorID: number;
+  isbn: String;
+  title: string;
+  private authorid: number;
 
   constructor({
     isbn,
@@ -14,9 +15,9 @@ export default class Book {
     title: string;
     authorid: number;
   }) {
-    this.ISBN = isbn;
-    this.Title = title;
-    this.AuthorID = authorid;
+    this.isbn = isbn;
+    this.title = title;
+    this.authorid = authorid;
   }
 
   get Author() {
@@ -26,8 +27,69 @@ export default class Book {
 
   async save() {
     await db.none(
-      "INSERT INTO Book VALUES ($<ISBN>, $<Title>, $<AuthorID>);",
+      "INSERT INTO Book VALUES ($<isbn>, $<title>, $<authorid>);",
       this
     );
+  }
+
+  static async getList() {
+    //get all books from the database
+    let books = await db.many("SELECT * From Book ORDER BY title ASC");
+    //return as a list of objects of the 'Book' class
+    return books.map((e) => new Book(e));
+  }
+
+  static async search({
+    title,
+    author,
+  }: {
+    title?: string | undefined;
+    author?: string | undefined;
+  }): Promise<Book[]> {
+    if (author) author = `%${author}%`;
+    if (title) title = `%${title}%`;
+
+    if (title && author) {
+      let books = await db.manyOrNone(
+        //check 1. titles match or are similar, 2. author id is the author id of an author which matches or is similar
+        `SELECT * From Book WHERE 
+          title ILIKE $<title> 
+        AND 
+          authorid in (
+            SELECT authorid From Author WHERE name ILIKE $<author>
+          )
+        ORDER BY title ASC;`,
+        { author, title }
+      );
+
+      return books.map((e) => new Book(e));
+    }
+
+    if (title) {
+      console.log(title);
+      let books = await db.manyOrNone(
+        `SELECT * From Book WHERE 
+          title ILIKE $<title>
+        ORDER BY title ASC;`,
+        { title }
+      );
+
+      return books.map((e) => new Book(e));
+    }
+
+    if (author) {
+      let books = await db.manyOrNone(
+        `SELECT * From Book WHERE 
+          authorid in (
+            SELECT authorid From Author WHERE name ILIKE $<author>
+          )
+        ORDER BY title ASC`,
+        { author }
+      );
+
+      return books.map((e) => new Book(e));
+    }
+
+    return this.getList();
   }
 }
