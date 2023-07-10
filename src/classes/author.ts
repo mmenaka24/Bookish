@@ -10,12 +10,12 @@ export default class Author {
   }
 
   async save() {
-    await db.none("INSERT INTO Author VALUES ($1)", this.name);
-    let data = await db.one("SELECT * FROM Author WHERE name = $1", this.name);
+    let { authorid } = await db.one(
+      "INSERT INTO Author VALUES ($1) RETURNING authorid",
+      this.name
+    );
 
-    console.log(data);
-
-    this.authorid = data.authorid;
+    this.authorid = authorid;
   }
 
   //static means applies to whole class as a concept rather than individual instance of the class

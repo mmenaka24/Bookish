@@ -20,9 +20,10 @@ export default class Member {
   }
 
   async save() {
-    await db.none(
-      "INSERT INTO Member VALUES ($<username>, $<password>);",
+    let { userid } = await db.one(
+      "INSERT INTO Member VALUES ($<username>, $<password>) RETURNING userid;",
       this
     );
+    this.userid = userid;
   }
 }
