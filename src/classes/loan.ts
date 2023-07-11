@@ -20,6 +20,13 @@ export default class Loan {
     this.duedate = duedate;
   }
 
+  async save() {
+    await db.none(
+      "INSERT INTO Loan VALUES ($<copyid>, $<userid>, $<duedate>);",
+      this
+    );
+  }
+
   get Author() {
     //todo make this return an author object
     return null;
@@ -42,5 +49,20 @@ export default class Loan {
     return (
       await db.manyOrNone("SELECT * FROM loan WHERE userid = $1;", userid)
     ).map((e) => new Loan(e));
+  }
+
+  static async isOnLoan(id: number) {
+    return Boolean(
+      await db.oneOrNone("SELECT * FROM loan WHERE copyid = $1;", id)
+    );
+  }
+
+  async delete() {
+    return Boolean(
+      await db.oneOrNone(
+        "DELETE FROM Loan WHERE CopyID = $1 RETURNING *;",
+        this.copyid
+      )
+    );
   }
 }

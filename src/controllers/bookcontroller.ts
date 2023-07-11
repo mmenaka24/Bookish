@@ -25,7 +25,7 @@ class BookController {
           author: z.string().optional(),
         })
         .parse(req.query);
-      console.log(query);
+
       return res.send(await Book.search(query));
     } catch (e) {
       return res.send(await Book.getList());
@@ -33,8 +33,8 @@ class BookController {
   }
 
   //find the desired book in the Book table in the database with the matching ISBN number (if it exists), and send this back
-  async getBook(request: Request, response: Response) {
-    let { ISBN } = request.params;
+  async getBook(req: Request, res: Response) {
+    let { ISBN } = req.params;
     let book = await db.oneOrNone(
       `SELECT b.title, COUNT(c) AS total_copies, COUNT(l) as loaned_copies, COUNT(c) - COUNT(l) as availible_copies
         FROM book b
@@ -48,7 +48,7 @@ class BookController {
     );
 
     if (!book) {
-      return response.status(404).send(`Book with ISBN ${ISBN} not found`);
+      return res.status(404).send(`Book with ISBN ${ISBN} not found`);
     }
 
     let loans = await db.manyOrNone(
@@ -63,11 +63,11 @@ class BookController {
       ISBN
     );
 
-    response.send({ book, loans });
+    res.send({ book, loans });
   }
 
   //add a book to the Book table in the database
-  async addBook(request: Request, response: Response) {
+  async addBook(req: Request, res: Response) {
     let data = z
       .object({
         Title: z.string().nonempty(),
@@ -78,10 +78,10 @@ class BookController {
           Name: z.string().optional(),
         }),
       })
-      .safeParse(request.body);
+      .safeParse(req.body);
 
     if (!data.success) {
-      return response.status(400).send(data.error.message);
+      return res.status(400).send(data.error.message);
     }
 
     //set the ISBN and Title of the book we want to add
@@ -109,7 +109,7 @@ class BookController {
         })
     );
 
-    return response.send({
+    return res.send({
       ...book,
       barcodes: copies.map((e) => e.giveBarcode()),
     });

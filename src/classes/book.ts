@@ -50,14 +50,17 @@ export default class Book {
     if (title) title = `%${title}%`;
 
     if (title && author) {
+      //check 1. titles match or are similar, 2. author id is the author id of an author which matches or is similar
       let books = await db.manyOrNone(
-        //check 1. titles match or are similar, 2. author id is the author id of an author which matches or is similar
-        `SELECT * From Book WHERE 
-          title ILIKE $<title> 
+        `
+        SELECT * 
+        From Book b
+        INNER JOIN Author a
+          ON a.authorid = b.authorid
+        WHERE 
+          b.title ILIKE $<title> 
         AND 
-          authorid in (
-            SELECT authorid From Author WHERE name ILIKE $<author>
-          )
+          a.name ILIKE $<author>
         ORDER BY title ASC;`,
         { author, title }
       );
@@ -66,9 +69,9 @@ export default class Book {
     }
 
     if (title) {
-      console.log(title);
       let books = await db.manyOrNone(
-        `SELECT * From Book WHERE 
+        `
+        SELECT * From Book WHERE 
           title ILIKE $<title>
         ORDER BY title ASC;`,
         { title }
@@ -79,10 +82,13 @@ export default class Book {
 
     if (author) {
       let books = await db.manyOrNone(
-        `SELECT * From Book WHERE 
-          authorid in (
-            SELECT authorid From Author WHERE name ILIKE $<author>
-          )
+        `
+        SELECT * 
+        From Book b
+        INNER JOIN Author a
+          ON a.authorid = b.authorid
+        WHERE 
+          a.name ILIKE $<author>
         ORDER BY title ASC`,
         { author }
       );
