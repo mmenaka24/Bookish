@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import barcode from "../barcode";
 import db from "../db";
 
@@ -18,11 +19,6 @@ export default class Book {
     this.isbn = isbn;
     this.title = title;
     this.authorid = authorid;
-  }
-
-  get Author() {
-    //todo make this return an author object
-    return null;
   }
 
   async save() {
@@ -46,6 +42,14 @@ export default class Book {
     title?: string | undefined;
     author?: string | undefined;
   }): Promise<Book[]> {
+    let condition: any = {};
+
+    if (title) condition.title = { [Op.iLike]: title };
+    if (author) condition.author = { [Op.iLike]: author };
+
+    let books = db.models.Book.findAll({
+      where: condition,
+    });
     if (author) author = `%${author}%`;
     if (title) title = `%${title}%`;
 

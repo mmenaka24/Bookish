@@ -20,12 +20,8 @@ export default class Loan {
     this.duedate = duedate;
   }
 
-  get Author() {
-    //todo make this return an author object
-    return null;
-  }
-
   get Book(): Promise<Book> {
+    Loan.book;
     return db
       .one(
         `SELECT * FROM book WHERE isbn = (

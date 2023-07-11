@@ -18,11 +18,6 @@ export default class Copy {
     this.copyid = copyid;
   }
 
-  get Book() {
-    //todo make this return a book object
-    return null;
-  }
-
   giveBarcode() {
     return barcode(`ISBN: ${this.isbn}, copyID: ${this.copyid}`);
   }
